@@ -19,9 +19,28 @@ contract Ballot {
     enum Phase {Init, Regs, Vote, Done};
     Phase private state = Phase.Init;
 
-    /** Gate Keeper */
+    /** Gate Keepers */
     modifier onlyChairperson {
         require(chairperson == msg.sender);
+        _;
+    }
+
+    modifier validPhase(Phase phase) {
+        require(state == phase);
+        _;
+    }
+
+    modifier validProposal(uint proposalIndex) {
+        require(proposalIndex < proposals);
+        _;
+    }
+
+    modifier hasNotVoted(address voter) {
+        require(!voters[voter].voted);
+        _;
+    }
+
+    modifier onlyVoter(address voter) {
         _;
     }
 
@@ -40,5 +59,30 @@ contract Ballot {
         if(x < state) { revert(); } /** State transition allowed : 0 -> 1 -> 2 -> 3 */
 
         state = phase;
+    }
+
+    function register(address voter) public onlyChairperson validPhase(Phase.Regs) hasNotVoted(voter) {
+        voters[voter].weight = 1;
+        voters[voter].voted = false;
+    }
+
+    function vote(uint proposal) public onlyVoter validPhase(Phase.Vote) validProposal(proposal) hasNotVoted(msg.sender) returns (bool) {
+        Voter memory voter = voters[msg.sender];
+        voter.voted = true;
+        voter.vote = proposal;
+        proposals[proposal].voteCount += voter.weight;
+
+        return true;
+    }
+
+    function requestWinner() public validPhase(Phase.Done) view returns (uint winningProposal, uint voteCount) {
+        voteCount = 0;
+        
+        for(unit proposal = 0; proposal < proposals.length; proposal++) {
+            if(proposals[proposal].voteCount > voteCount) {
+                voteCount = proposals[proposal].voteCount;
+                winningProposal = proposal;
+            }
+        }
     }
 }
