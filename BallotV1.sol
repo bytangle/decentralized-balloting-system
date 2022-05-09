@@ -21,8 +21,15 @@ contract Ballot {
 
     /** Gate Keepers */
     modifier onlyChairperson {
+        /**
+        * Require function is used for validation of
+        * 1. data
+        * 2. computation
+        * 3. parameter values
+        * Similarly to an assert function, it reverts the computation once the supplied condition is not met
+        */
         require(chairperson == msg.sender);
-        _;
+        _; /** Continue execution of actual logic guarded by this modifier */
     }
 
     modifier validPhase(Phase phase) {
@@ -84,7 +91,13 @@ contract Ballot {
             }
         }
 
-        /** Atleast, a winning proposal must have 3 vote counts */
+        /** 
+        * Atleast, a winning proposal must have 3 vote counts [rule implemented using assert function]
+        * Actually, assert function is only used to manage exceptions 
+        * [The usage here might not be appropriate, Only used here to establish the fact that it works similarly
+        * to require but the context of application differs]
+        * And it is important to note that it costs more in wasted blockchain gas than require
+        */
         assert(voteCount >= 3);
     }
 }
