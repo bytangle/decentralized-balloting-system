@@ -55,18 +55,17 @@ contract Ballot {
     }
 
     function changePhase(Phase phase) public onlyChairperson {
-        if(msg.sender != chairperson) { revert(); } /** Revert if entity calling this function isn't the chairperson */
-        if(x < state) { revert(); } /** State transition allowed : 0 -> 1 -> 2 -> 3 */
+        require(phase > state) /** State transition allowed : 0 -> 1 -> 2 -> 3 */
 
         state = phase;
     }
 
-    function register(address voter) public onlyChairperson validPhase(Phase.Regs) hasNotVoted(voter) {
+    function register(address voter) public validPhase(Phase.Regs) onlyChairperson  hasNotVoted(voter) {
         voters[voter].weight = 1;
         voters[voter].voted = false;
     }
 
-    function vote(uint proposal) public onlyVoter validPhase(Phase.Vote) validProposal(proposal) hasNotVoted(msg.sender) returns (bool) {
+    function vote(uint proposal) public validProposal(proposal) onlyVoter validPhase(Phase.Vote) hasNotVoted(msg.sender) returns (bool) {
         Voter memory voter = voters[msg.sender];
         voter.voted = true;
         voter.vote = proposal;
@@ -84,5 +83,8 @@ contract Ballot {
                 winningProposal = proposal;
             }
         }
+
+        /** Atleast, a winning proposal must have 3 vote counts */
+        assert(voteCount >= 3);
     }
 }

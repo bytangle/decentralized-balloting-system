@@ -1,4 +1,4 @@
-# Digital Democracy - Online Ballot System
+# Digital Democracy - Decentralized Online Ballot System
 
 Decentralized online voting system
 
@@ -8,3 +8,4 @@ Decentralized online voting system
 - Phases (Registration, Voting and Counting)
 - Vote weight
 - User with highest privilege creates proposals for other users to vote for
+- Validation/Verification using modifiers
